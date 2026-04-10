@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For B2 💙</title>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:Arial;
+  background:black;
+  color:white;
+  text-align:center;
+  overflow-x:hidden;
+}
+
+/* ENVELOPE */
+#envelopeScreen{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  background:radial-gradient(circle,#1a3b5d,#000);
+}
+#envelope{
+  font-size:90px;
+  cursor:pointer;
+  animation:float 2s infinite;
+}
+@keyframes float{
+  50%{transform:translateY(-12px);}
+}
+
+/* INTRO */
+#intro{
+  display:none;
+  height:100vh;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+input{
+  padding:12px;
+  border-radius:10px;
+  border:none;
+}
+button{
+  margin-top:10px;
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  background:#8fd3ff;
+}
+
+/* MAIN */
+#main{
+  display:none;
+  padding:20px;
+}
+
+.line{
+  opacity:0;
+  transform:translateY(20px);
+  transition:1s;
+  margin:10px;
+}
+.line.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* POPUP */
+#popup{
+  position:fixed;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#111;
+  padding:10px;
+  border:1px solid #8fd3ff;
+  display:none;
+  z-index:999;
+}
+
+/* CAKE */
+#cakeScreen{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:black;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+}
+
+/* WISH */
+#wishScreen{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:black;
+  justify-content:center;
+  align-items:center;
+}
+
+/* PAPER */
+#paperScreen{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:#0a0a0a;
+  justify-content:center;
+  align-items:center;
+}
+#paper{
+  background:#f5f0e6;
+  color:black;
+  padding:20px;
+  border-radius:10px;
+  font-family:cursive;
+  opacity:0;
+  transform:translateY(40px);
+  transition:1.5s;
+}
+
+/* BALLOONS */
+.balloon{
+  position:fixed;
+  bottom:-50px;
+  font-size:30px;
+  animation:floatUp 6s linear forwards;
+}
+@keyframes floatUp{
+  0%{transform:translateY(0);opacity:1;}
+  100%{transform:translateY(-120vh);opacity:0;}
+}
+</style>
+</head>
+
+<body>
+
+<div id="popup"></div>
+
+<!-- ENVELOPE -->
+<div id="envelopeScreen">
+  <div id="envelope" onclick="openEnvelope()">💌</div>
+  <p>Tap the envelope</p>
+</div>
+
+<!-- INTRO -->
+<div id="intro">
+  <h2>Type your name</h2>
+  <input id="nameInput">
+  <button onclick="start()">Start</button>
+  <p id="response"></p>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+<h1>🎉 Happy Birthday B2 🎉</h1>
+<div id="msg"></div>
+
+<p id="question" style="display:none;">Did you enjoy it? 💙</p>
+<button onclick="answer()">Yes 💙</button>
+</div>
+
+<!-- CAKE -->
+<div id="cakeScreen" onclick="blowCandles()">
+  <div style="font-size:100px;">🎂</div>
+  <p>Tap to blow candles</p>
+</div>
+
+<!-- WISH -->
+<div id="wishScreen">
+  <h2>close your eyes… make a wish 💙</h2>
+</div>
+
+<!-- PAPER -->
+<div id="paperScreen">
+  <div id="paper">
+    <h2>
+    i don’t know where life takes us…<br><br>
+    but i hope you always remember this moment 💙<br><br>
+    you are deeply appreciated, always.<br><br>
+    i love you baby 💙
+    </h2>
+  </div>
+</div>
+
+<script>
+
+let audioCtx;
+
+/* POP */
+function popSound(){
+  const osc=audioCtx.createOscillator();
+  const gain=audioCtx.createGain();
+  osc.frequency.value=200;
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime+0.2);
+}
+
+/* EMERGENCY */
+function emergencySound(){
+  const osc=audioCtx.createOscillator();
+  const gain=audioCtx.createGain();
+  osc.frequency.value=650;
+  gain.gain.setValueAtTime(0.4,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.5);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime+0.5);
+}
+
+/* BALLOONS */
+function launchBalloons(){
+  const emojis=["🎈","🎉","💙","🎊"];
+  for(let i=0;i<10;i++){
+    let b=document.createElement("div");
+    b.className="balloon";
+    b.innerText=emojis[Math.floor(Math.random()*emojis.length)];
+    b.style.left=Math.random()*100+"vw";
+    document.body.appendChild(b);
+    setTimeout(()=>b.remove(),6000);
+  }
+}
+
+/* POPUP */
+function showPopup(msg){
+  let p=document.getElementById("popup");
+  p.innerText=msg;
+  p.style.display="block";
+  emergencySound();
+  launchBalloons();
+  setTimeout(()=>p.style.display="none",3000);
+}
+
+/* OPEN */
+function openEnvelope(){
+  audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  audioCtx.resume();
+  popSound();
+
+  document.getElementById("envelopeScreen").style.display="none";
+  document.getElementById("intro").style.display="flex";
+}
+
+/* START */
+function start(){
+  let name=document.getElementById("nameInput").value.toLowerCase();
+  let response=document.getElementById("response");
+
+  if(name==="b2"||name==="b 2"){
+    response.innerText="Access granted 💙";
+    showPopup("📅 CEO ALERT: Sir check your calendar… it's your birthday 😭🎂");
+  } else {
+    response.innerText="try again 😂";
+    return;
+  }
+
+  document.getElementById("intro").style.display="none";
+  document.getElementById("main").style.display="block";
+
+  startMusic();
+  showLines();
+}
+
+/* 🎹 MUSIC */
+function startMusic(){
+  const notes=[
+    264,264,297,264,352,330,
+    264,264,297,264,396,352,
+    264,264,528,440,352,330,297
+  ];
+
+  function loop(){
+    let t=audioCtx.currentTime;
+
+    notes.forEach((f,i)=>{
+      const osc=audioCtx.createOscillator();
+      const gain=audioCtx.createGain();
+
+      osc.frequency.value=f;
+      gain.gain.setValueAtTime(0.2,t+i*0.3);
+      gain.gain.exponentialRampToValueAtTime(0.001,t+i*0.3+0.25);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start(t+i*0.3);
+      osc.stop(t+i*0.3+0.3);
+    });
+
+    setTimeout(loop,7000);
+  }
+
+  loop();
+}
+
+/* TEXT */
+let lines=[
+"I know you don’t usually celebrate birthdays…",
+"But I couldn’t let this day pass without you knowing this.",
+"I’m really glad you were born 💙",
+"You matter more than you think.",
+"And I hope one day you see yourself the way I see you.",
+"I wish I could be there…",
+"But for now, this is your moment 💙"
+];
+
+function showLines(){
+  let c=document.getElementById("msg");
+
+  lines.forEach((t,i)=>{
+    setTimeout(()=>{
+      let d=document.createElement("div");
+      d.className="line";
+      d.innerText=t;
+      c.appendChild(d);
+      setTimeout(()=>d.classList.add("show"),100);
+
+      if(i===lines.length-1){
+        document.getElementById("question").style.display="block";
+      }
+    },i*1200);
+  });
+}
+
+/* ANSWER FLOW */
+function answer(){
+  document.getElementById("cakeScreen").style.display="flex";
+}
+
+/* CAKE FLOW */
+function blowCandles(){
+  document.getElementById("cakeScreen").style.display="none";
+
+  let wish=document.getElementById("wishScreen");
+  wish.style.display="flex";
+
+  setTimeout(()=>{
+    wish.style.display="none";
+
+    let paper=document.getElementById("paper");
+    document.getElementById("paperScreen").style.display="flex";
+
+    setTimeout(()=>{
+      paper.style.opacity=1;
+      paper.style.transform="translateY(0)";
+    },200);
+
+    setTimeout(()=>{
+      if(typeof confetti!=="undefined"){
+        confetti({particleCount:200,spread:120});
+      }
+    },3500);
+
+  },3000);
+}
+
+</script>
+
+</body>
+</html>
